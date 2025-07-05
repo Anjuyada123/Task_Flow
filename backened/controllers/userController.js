@@ -40,3 +40,62 @@ export async function registerUser(req,res){
         res.status(500).json({success:false,message:"Server error"});
     }
 }
+
+//Login function
+    export async function loginUser(req, res) {
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Email and password required" });
+    }
+  
+    try {
+      const user = await User.findOne({ email });
+  
+      if (!user) {
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
+      }
+  
+      const Match = await bcrypt.compare(password, user.password);
+  
+      if (!Match) {
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
+      }
+  
+      const token = createToken(user._id);
+  
+      res.json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+  
+    }  catch(err){
+        console.log(err);
+        res.status(500).json({success:false,message:"Server error"});
+    }
+  }
+  
+  //Get Current user
+
+  export async function getCurrentUser(req,res){
+    try{
+        const user=await User.findById(req.user.id).select("name eamil");
+        if(!user){
+            return res.status(400).json({success:false,message:"User not found"});
+        }
+        res.json({success:true,user});
+    }
+
+    catch(err){
+        console.log(err);
+        res.status(500).json({success:false,message:"server error"});
+    }
+  }
+
+  //Update user profile
+  
