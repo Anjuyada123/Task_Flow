@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
 
-// Define the schema
+import mongoose from 'mongoose';
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -14,9 +14,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   }
-})
+});
 
-// Create the model
-const userModel = mongoose.models.user||mongoose.model('user', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-export default userModel;
+export default User;
