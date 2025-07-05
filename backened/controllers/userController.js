@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET=process.env.JWT_SECRET || 'your_jwt_secret_here';
 const TOKEN_EXPIRES='24h';
 
-const createToken=(userId)=>JWT_SECRET.substring({id:user},JWT_SECRET,{expires:TOKEN_EXPIRES});
+const createToken=(userId)=>JWT_SECRET.jwt.sign({id:userId},JWT_SECRET,{expires:TOKEN_EXPIRES});
 
 //Register Function
 
@@ -98,4 +98,67 @@ export async function registerUser(req,res){
   }
 
   //Update user profile
+  export async function updateProfile(req, res) {
+    const { name, email } = req.body;
+  
+    if (!name || !email || !validator.isEmail(email)) {
+      return res.status(400).json({ success: false, message: "Valid name and email required" });
+    }
+  
+    try {
+      const exists = await User.findOne({ email, _id: { $ne: req.user.id } });
+  
+      if (exists) {
+        return res.status(409).json({ success: false, message: "Email already in use" });
+      }
+  
+      const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { name, email },
+        { new: true, runValidators: true, select: "name email" }
+      );
+  
+      res.json({ success: true, user });
+  
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  }
+
+  //Change password function
+
+  export async function updatePassword(req, res) {
+    const { currentPassword, newPassword } = req.body;
+  
+    if (!currentPassword || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "Password invalid or too short" });
+    }
+  
+    try {
+      const user = await User.findById(req.user.id).select("password");
+  
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      const match = await bcrypt.compare(currentPassword, user.password);
+  
+      if (!match) {
+        return res.status(401).json({ success: false, message: "Current password incorrect" });
+      }
+  
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+  
+      res.json({ success: true, message: "Password updated successfully" });
+  
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  }
+  
+  
+  
   
