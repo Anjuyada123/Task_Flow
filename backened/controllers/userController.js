@@ -1,13 +1,15 @@
 import User from '../models/userModel.js'
 import validator from 'validator';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+
 
 
 const JWT_SECRET=process.env.JWT_SECRET || 'your_jwt_secret_here';
 const TOKEN_EXPIRES='24h';
 
-const createToken=(userId)=>JWT_SECRET.jwt.sign({id:userId},JWT_SECRET,{expires:TOKEN_EXPIRES});
+const createToken=(userId)=>{
+  return jwt.sign({id:userId},JWT_SECRET,{expiresIn:TOKEN_EXPIRES})};
 
 //Register Function
 
@@ -26,7 +28,7 @@ export async function registerUser(req,res){
 
     try{
         if(await User.findOne({email})){
-            return res.send(409).json({success:false,message:"User already exists"});
+            return res.status(409).json({success:false,message:"User already exists"});
         }
         const hashed=await bcrypt.hash(password,10);
         const user=await User.create({name,email,password:hashed});
@@ -84,7 +86,7 @@ export async function registerUser(req,res){
 
   export async function getCurrentUser(req,res){
     try{
-        const user=await User.findById(req.user.id).select("name eamil");
+        const user=await User.findById(req.user.id).select("name email");
         if(!user){
             return res.status(400).json({success:false,message:"User not found"});
         }
