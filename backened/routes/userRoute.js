@@ -19,5 +19,5 @@ router.get('/me', authMiddleware, getCurrentUser);
 router.put('/update-profile', authMiddleware, updateProfile);
 router.put('/update-password', authMiddleware, updatePassword);
 
-// ✅ Export the correct router name
+//Export the correct router name
 export default router;
